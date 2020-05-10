@@ -2,22 +2,15 @@
 package com.mycompany.adrec04;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Properties;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 /**
  *
@@ -37,26 +30,61 @@ public class Main {
         Configuracion conf = gson.fromJson(json, Configuracion.class);
         Configuracion cf = new Configuracion();
         System.out.println(cf.dbConnection.getName());*/
-        String fichero = "";
-        Gson gson = new Gson();
-        try (BufferedReader br = new BufferedReader(new FileReader("config.json"))) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                fichero += linea;
-                System.out.println(linea);
-            }
-
-        } catch (FileNotFoundException ex) {
-            System.out.println(ex.getMessage());
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }
-        Configuracion conf = gson.fromJson(fichero, Configuracion.class);
-        System.out.println(conf.dbConnection.getAddress());
-        System.out.println(conf.dbConnection.getPort());
-        System.out.println(conf.dbConnection.getName());
-        System.out.println(conf.dbConnection.getUser());
-        System.out.println(conf.dbConnection.getPassword());
+        String nombreXml = "coronavirus.xml";
+        String archivo = "config.json";
+        Conexion.procesarXml(nombreXml, archivo);
+        /*Session session = null;
+        Records record = new Records("España", "Europa", 10, 5, 6);
+        Records record1 = new Records("España", "Europa", 10, 5, 6);
+         Transaction tran = null;
+        try{
+            //Session session = HibernateUtil.setSessionFactory(ip, puerto, baseDatos, usuario, pass, driver, dialect, hbm2ddl_auto, show_sql).openSession();
+            session = HibernateUtil.leerFicheroConfigurarMysql(archivo);
+            tran = session.beginTransaction();
+            
+            session.save(record);
+            
+            tran.commit();
+        }catch(HibernateException e){
+            e.printStackTrace();
+        }*/
     }
+    
+     public static void menu(){     
+       Scanner sc = new Scanner(System.in);
+       boolean salir =  false;
+       int opcion;
+       
+       while(!salir){
+           try{
+                System.out.println("\nMenu\n");  
+                System.out.println("1. Paises por número de casos / 2. Día con mayores muertes / 3. Sair");
+                System.out.println("Escolla opcion");
+                opcion = sc.nextInt();
+
+                switch(opcion){
+                    case 1:
+                        System.out.println("Introduzca número de casos\n");
+                        int numCasos = sc.nextInt();
+                        System.out.println("Listado: \n");
+                        Conexion.obtenerPaisesPorNumCasos(numCasos);   
+                        break;
+                    case 2:
+                        System.out.println("Listado: \n");
+                        Conexion.obtenerMayorNumMuertesPorPais();  
+                        break;
+                    case 3:
+                        Conexion.desconetarBaseDatos();
+                        System.out.println("Saliendo...");
+                        salir=true;
+                        break;
+                }
+           } catch (InputMismatchException e){
+               System.out.println("Solo se admiten numeros");
+               sc.next();
+           }
+       }
+    }
+    
     
 }

@@ -1,10 +1,10 @@
 {
     "dbConnection":{
-        "address":"192.168.56.101",
+        "address":"localhost",
         "port":"3306",
-        "name":"hibernate",
-        "user":"userhibernate",
-        "password":"abc123."    
+        "name":"adu4",
+        "user":"miguel",
+        "password":"soygallegoyque"    
     },
     "hibernate":{
         "driver":"com.mysql.cj.jdbc.Driver",
