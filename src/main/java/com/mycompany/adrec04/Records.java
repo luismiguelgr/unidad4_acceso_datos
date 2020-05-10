@@ -23,7 +23,7 @@ public class Records implements Serializable{
     @Column(name="id", unique= true)
     private int id;
     
-    @Column(name="countries_and_Territories")
+    @Column(name="countries_and_territories")
     private String countriesAndTerritories;
     
     @Column(name="continent_exp")

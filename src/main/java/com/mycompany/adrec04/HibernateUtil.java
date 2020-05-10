@@ -25,7 +25,22 @@ import org.hibernate.service.ServiceRegistry;
  */
 public class HibernateUtil {
     private static SessionFactory sessionFactory;
-
+    private static Session session;
+    static String ip;
+     static String puerto ;
+       static  String baseDatos;
+        static String usuario ;
+        static String pass;
+        static String driver;
+        static String dialect;
+       static  String hbm2ddl_auto;
+        static boolean show_sql;
+  
+    public static Session getSession(){
+        session = HibernateUtil.setSessionFactory(ip, puerto, baseDatos, usuario, pass, driver, dialect, hbm2ddl_auto, show_sql).openSession();
+        return session;
+    }
+    
     public static SessionFactory setSessionFactory(String ip, String puerto, String baseDatos, String usuario, String pass, 
                                         String driver, String dialect,  String hbm2ddl_auto, boolean show_sql) {
         
@@ -99,7 +114,8 @@ public class HibernateUtil {
         String hbm2ddl_auto = conf.hibernate.getHBM2DDL_AUTO();
         boolean show_sql = conf.hibernate.isSHOW_SQL();
         //HibernateUtil.setSessionFactory(ip, puerto, baseDatos, usuario, pass, driver, dialect, hbm2ddl_auto, show_sql);
-        Session session = HibernateUtil.setSessionFactory(ip, puerto, baseDatos, usuario, pass, driver, dialect, hbm2ddl_auto, show_sql).openSession();
+        session = HibernateUtil.setSessionFactory(ip, puerto, baseDatos, usuario, pass, driver, dialect, hbm2ddl_auto, show_sql).openSession();
         return session;
     }
+    
 }

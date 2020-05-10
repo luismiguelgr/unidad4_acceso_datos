@@ -8,8 +8,11 @@ import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -107,44 +110,35 @@ public class Conexion {
     }
     
     public static void obtenerPaisesPorNumCasos(int numCasos){
-        ResultSet rs = null;
-        try{
-            String sql = "SELECT * FROM record WHERE cases > ? GROUP BY countriesAndTerritories ORDER BY cases;";
-            PreparedStatement pstmt = conexion.prepareStatement(sql);
-            
-            pstmt.setInt(1, numCasos);
-            rs = pstmt.executeQuery();     
-            if(rs.next() == false){
-                System.out.println("No se han encontrado paises");
-            }else{
-                while(rs.next()){
-                System.out.println("Pais: "+rs.getString("countriesAndTerritories") + " - Casos: " + rs.getString("cases"));
-                }
-            }            
-        }
-        catch(SQLException e){
-            System.out.println(e.getMessage());
+        Session session = HibernateUtil.getSession();
+    
+        Query sql = session.createQuery("SELECT r FROM Records r WHERE r.cases > :n");
+        sql.setParameter("n", numCasos);
+        List<Records> records = sql.list();
+        for(Records r :records){
+            System.out.println("Pais: " +r.getCountriesAndTerritories().toString() + " - Continente: " + r.getContinentExp().toString() + " - Casos: " + r.getCases());
         }
     }
     
      public static void obtenerMayorNumMuertesPorPais(){
-        ResultSet rs = null;
-        try{
-            String sql = "SELECT MAX(deaths) AS deaths, countriesAndTerritories, day FROM record GROUP BY countriesAndTerritories ORDER BY deaths;";
-            Statement stmt = conexion.createStatement();
-          
-            rs = stmt.executeQuery(sql);     
-            if(rs.next() == false){
-                System.out.println("No se han encontrado paises");
-            }else{
-                while(rs.next()){
-                    System.out.println("Pais: "+rs.getString("countriesAndTerritories") + " - Muertes: " + rs.getInt("deaths") + " - Día: " + rs.getInt("day"));
-                }
-            }            
-        }
-        catch(SQLException e){
-            System.out.println(e.getMessage());
-        }
+        Session session = HibernateUtil.getSession();
+
+        Query sql = session.createSQLQuery("select max(deaths), day, countries_and_territories from record group by countries_and_territories;");
+        //Query sql = session.createQuery("SELECT r FROM Records r  GROUP BY r.countriesAndTerritories");
+        //Query sql = session.createNativeQuery("SELECT * FROM record r WHERE r.deaths = (SELECT MAX(rr.deaths) FROM record rr WHERE rr.countries_and_territories = r.countries_and_territories) GROUP BY r.countries_and_territories");
+        //Query sql = session.createNativeQuery("SELECT MAX(deaths) AS deaths, countries_and_territories, day FROM record GROUP BY countries_and_territories");
+        //Query sql = session.createSQLQuery("SELECT MAX(deaths) AS deaths, countries_and_territories, day FROM record GROUP BY countries_and_territories ORDER BY deaths;");
+        //List<Integer> records = sql.list(); 
+        List list = sql.list();
+        //List<Records> lista = sql.list();
+       
+        //for(Records r : list){
+        System.out.println(sql.uniqueResult());
+        //System.out.println(r.getDay());
+//System.out.println("Pais: " +r.getCountriesAndTerritories() + " - Continente: " + r.getContinentExp() + " Muertes: " + r.getDeaths());
+        //}
+        //String sql = "SELECT MAX(deaths) AS deaths, countriesAndTerritories, day FROM record GROUP BY countriesAndTerritories ORDER BY deaths;";
+            
     }
     
     public static void procesarXml(String nombreXml, String archivoJson){
@@ -171,7 +165,7 @@ public class Conexion {
             //session.getTransaction().commit();
              //tran.commit();
               session.getTransaction().commit();
-        session.close();
+                session.close();
             
         } catch (SAXException e){
             System.out.println("Error al leer el XML");
@@ -199,6 +193,7 @@ public class Conexion {
         }
         return contiene;
     }
+   
     /*
      public static void crearBaseDatos(String nombreBaseDatos){
 

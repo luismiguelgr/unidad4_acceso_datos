@@ -7,8 +7,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.InputMismatchException;
+import java.util.Iterator;
 import java.util.Scanner;
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -31,8 +33,18 @@ public class Main {
         Configuracion cf = new Configuracion();
         System.out.println(cf.dbConnection.getName());*/
         String nombreXml = "coronavirus.xml";
-        String archivo = "config.json";
-        Conexion.procesarXml(nombreXml, archivo);
+        String archivoJson = "config.json";
+        
+        Session session = HibernateUtil.leerFicheroConfigurarMysql(archivoJson);
+        //Conexion.procesarXml(nombreXml, archivoJson);
+        Query query = session.createQuery("SELECT COUNT(*) FROM Records");
+        Long numFilas = (Long) query.uniqueResult();
+        if(numFilas <= 0){
+            //Conexion.procesarXml(nombreXml, archivoJson);
+        }
+        menu();
+            
+        //}
         /*Session session = null;
         Records record = new Records("España", "Europa", 10, 5, 6);
         Records record1 = new Records("España", "Europa", 10, 5, 6);

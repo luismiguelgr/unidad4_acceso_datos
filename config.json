@@ -9,7 +9,7 @@
     "hibernate":{
         "driver":"com.mysql.cj.jdbc.Driver",
         "dialect":"org.hibernate.dialect.MySQL5Dialect",
-        "HBM2DDL_AUTO":"create",
+        "HBM2DDL_AUTO":"update",
         "SHOW_SQL": true
     }
 }
