@@ -123,20 +123,22 @@ public class Conexion {
      public static void obtenerMayorNumMuertesPorPais(){
         Session session = HibernateUtil.getSession();
 
-        Query sql = session.createSQLQuery("select max(deaths), day, countries_and_territories from record group by countries_and_territories;");
+        Query sql = session.createQuery("select r.countriesAndTerritories,  max(r.deaths) as deaths, r.day from Records r GROUP BY r.countriesAndTerritories");
         //Query sql = session.createQuery("SELECT r FROM Records r  GROUP BY r.countriesAndTerritories");
         //Query sql = session.createNativeQuery("SELECT * FROM record r WHERE r.deaths = (SELECT MAX(rr.deaths) FROM record rr WHERE rr.countries_and_territories = r.countries_and_territories) GROUP BY r.countries_and_territories");
         //Query sql = session.createNativeQuery("SELECT MAX(deaths) AS deaths, countries_and_territories, day FROM record GROUP BY countries_and_territories");
         //Query sql = session.createSQLQuery("SELECT MAX(deaths) AS deaths, countries_and_territories, day FROM record GROUP BY countries_and_territories ORDER BY deaths;");
         //List<Integer> records = sql.list(); 
-        List list = sql.list();
-        //List<Records> lista = sql.list();
+        //List list = sql.list();
+        
+        List<Object> lista = sql.list();
        
-        //for(Records r : list){
-        System.out.println(sql.uniqueResult());
-        //System.out.println(r.getDay());
+        for(Object obj : lista){
+        //System.out.println(sql.uniqueResult());
+            Object[] campo = (Object[])obj;
+            System.out.println("Pais: " + campo[0] + " - Muertes: " + campo[1] + " - Dia: " + campo[2]);
 //System.out.println("Pais: " +r.getCountriesAndTerritories() + " - Continente: " + r.getContinentExp() + " Muertes: " + r.getDeaths());
-        //}
+        }
         //String sql = "SELECT MAX(deaths) AS deaths, countriesAndTerritories, day FROM record GROUP BY countriesAndTerritories ORDER BY deaths;";
             
     }
