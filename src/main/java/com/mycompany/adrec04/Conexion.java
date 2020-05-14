@@ -8,7 +8,6 @@ import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -27,12 +26,11 @@ public class Conexion {
     private String nombre;
     
     public Conexion(String nombre) {
-         String baseDatos = "jdbc:sqlite:/home/miguel/" + nombre;
+         String baseDatos = "jdbc:sqlite:/home/" + nombre;
         
         try{
             conexion = DriverManager.getConnection(baseDatos);
             if(conexion != null){
-                //DatabaseMetaData meta = connection.getMetaData();
                 crearTabla();
                 System.out.println("La base de datos fue creada");
             }
@@ -124,23 +122,12 @@ public class Conexion {
         Session session = HibernateUtil.getSession();
 
         Query sql = session.createQuery("select r.countriesAndTerritories,  max(r.deaths) as deaths, r.day from Records r GROUP BY r.countriesAndTerritories");
-        //Query sql = session.createQuery("SELECT r FROM Records r  GROUP BY r.countriesAndTerritories");
-        //Query sql = session.createNativeQuery("SELECT * FROM record r WHERE r.deaths = (SELECT MAX(rr.deaths) FROM record rr WHERE rr.countries_and_territories = r.countries_and_territories) GROUP BY r.countries_and_territories");
-        //Query sql = session.createNativeQuery("SELECT MAX(deaths) AS deaths, countries_and_territories, day FROM record GROUP BY countries_and_territories");
-        //Query sql = session.createSQLQuery("SELECT MAX(deaths) AS deaths, countries_and_territories, day FROM record GROUP BY countries_and_territories ORDER BY deaths;");
-        //List<Integer> records = sql.list(); 
-        //List list = sql.list();
-        
         List<Object> lista = sql.list();
        
         for(Object obj : lista){
-        //System.out.println(sql.uniqueResult());
             Object[] campo = (Object[])obj;
             System.out.println("Pais: " + campo[0] + " - Muertes: " + campo[1] + " - Dia: " + campo[2]);
-//System.out.println("Pais: " +r.getCountriesAndTerritories() + " - Continente: " + r.getContinentExp() + " Muertes: " + r.getDeaths());
         }
-        //String sql = "SELECT MAX(deaths) AS deaths, countriesAndTerritories, day FROM record GROUP BY countriesAndTerritories ORDER BY deaths;";
-            
     }
     
     public static void procesarXml(String nombreXml, String archivoJson){
@@ -155,17 +142,11 @@ public class Conexion {
             Session session = null;
             Transaction tran = null;
             session = HibernateUtil.leerFicheroConfigurarMysql(archivoJson);
-         // tran = session.beginTransaction();
           session.beginTransaction();
-            for(Records r: records){                                 
-                 
-               //record = new Records(r.getCountriesAndTerritories(), r.getContinentExp(), r.getCases(), r.getDeaths(), r.getDay());
-                            
+            for(Records r: records){   
                 session.save(r);
            
             }
-            //session.getTransaction().commit();
-             //tran.commit();
               session.getTransaction().commit();
                 session.close();
             
@@ -196,28 +177,5 @@ public class Conexion {
         return contiene;
     }
    
-    /*
-     public static void crearBaseDatos(String nombreBaseDatos){
-
-        String directorio = "/home/miguel/" + nombreBaseDatos;
-        String url = "jdbc:sqlite:"+directorio;
-
-        File ficheroBaseDatos = new File(directorio);
-        if (!ficheroBaseDatos.exists()) {
-            
-            
-            System.out.println("Base de datos no existe.");
-        }
-              
-        try (Connection conn = DriverManager.getConnection(url)) {
-            if (conn != null) {
-                String schema = conn.getSchema();
-                System.out.println("Prueba");
-                System.out.println(schema);
-            }
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }*/
+    
 }
