@@ -23,7 +23,7 @@ public class Main {
         Query query = session.createQuery("SELECT COUNT(*) FROM Records");
         Long numFilas = (Long) query.uniqueResult();
         if(numFilas <= 0){
-            //Conexion.procesarXml(nombreXml, archivoJson);
+            Conexion.procesarXml(nombreXml, archivoJson);
         }
         menu();
      
