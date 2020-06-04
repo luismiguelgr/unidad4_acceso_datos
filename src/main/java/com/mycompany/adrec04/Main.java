@@ -20,11 +20,11 @@ public class Main {
         
         Session session = HibernateUtil.leerFicheroConfigurarMysql(archivoJson);
 
-        Query query = session.createQuery("SELECT COUNT(*) FROM Records");
-        Long numFilas = (Long) query.uniqueResult();
-        if(numFilas <= 0){
+        //Query query = session.createQuery("SELECT COUNT(*) FROM countries");
+        //Long numFilas = (Long) query.uniqueResult();
+        //if(numFilas <= 0){
             Conexion.procesarXml(nombreXml, archivoJson);
-        }
+        //}
         menu();
      
     }

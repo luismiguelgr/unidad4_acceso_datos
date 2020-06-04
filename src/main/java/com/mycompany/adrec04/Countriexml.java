@@ -9,9 +9,10 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author miguel
  */
-public class Recordxml extends DefaultHandler{
+public class Countriexml extends DefaultHandler{
     private ArrayList<Records> records;
-    private Records recordAux;
+    private ArrayList<Countrie> countries;
+    private Countrie recordAux;
     private String dateRep;
     private boolean dateRepEncontrado = false;
     private String day;
@@ -35,15 +36,15 @@ public class Recordxml extends DefaultHandler{
     private String popData2018;
     private boolean popData2018Encontrado = false;
     
-    public Recordxml() {
+    public Countriexml() {
         super();
     }
     
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if(qName.equals("records")){
-            this.records = new ArrayList<Records>();
+            this.countries = new ArrayList<Countrie>();
         }else if(qName.equals("record")){
-            this.recordAux = new Records();
+            this.recordAux = new Countrie();
             dateRepEncontrado = true;
            dayEncontrado = true;
             monthEncontrado = true;
@@ -60,10 +61,10 @@ public class Recordxml extends DefaultHandler{
     
     public void endElement(String uri, String localName, String qName) throws SAXException{
         if(qName.equals("day")){
-            if(dayEncontrado){
+           /* if(dayEncontrado){
                 this.recordAux.setDay(Integer.parseInt(day));
                 dayEncontrado = false;
-            }
+            }*/
         }else if(qName.equals("continentExp")){
             if(continentExpEncontrado){
                 this.recordAux.setContinentExp(continentExp);
@@ -75,17 +76,17 @@ public class Recordxml extends DefaultHandler{
                 countriesAndTerritoriesEncontrado = false;
             }
         }else if(qName.equals("cases")){
-            if(casesEncontrado){
+            /*if(casesEncontrado){
                 this.recordAux.setCases(Integer.parseInt(cases));
                 casesEncontrado = false;
-            }
+            }*/
         }else if(qName.equals("deaths")){
-            if(deathsEncontrado){
+           /* if(deathsEncontrado){
                 this.recordAux.setDeaths(Integer.parseInt(deaths));
                 deathsEncontrado = false;
-            }
+            }*/
         }else if(qName.equals("record")){
-            this.records.add(this.recordAux);
+            this.countries.add(this.recordAux);
         }
     }
     
@@ -128,4 +129,9 @@ public class Recordxml extends DefaultHandler{
     public ArrayList<Records> getRecords(){
         return this.records;
     }
+    
+    public ArrayList<Countrie> getCountries(){
+        return this.countries;
+    }
+   
 }

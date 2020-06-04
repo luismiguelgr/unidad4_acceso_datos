@@ -26,8 +26,9 @@ public class Conexion {
     private String nombre;
     
     public Conexion(String nombre) {
-         String baseDatos = "jdbc:sqlite:/home/" + nombre;
-        
+        String directorioHome = System.getProperty("user.home");
+         String baseDatos = "jdbc:sqlite:"+directorioHome+"/" + nombre;
+               
         try{
             conexion = DriverManager.getConnection(baseDatos);
             if(conexion != null){
@@ -53,24 +54,23 @@ public class Conexion {
     }
       
     private static void crearTabla(){
-      try{
-          String sql = "CREATE TABLE IF NOT EXISTS record (\n" +
-                            "id int PRIMARY KEY,\n"+
-                            "dateRep varchar(50) ,\n"+
-                            "day int ,\n"+
-                            "month int ,\n"+
-                            "year int ,\n"+
-                            "cases int ,\n"+
-                            "deaths int ,\n"+
-                            "countriesAndTerritories varchar(50),\n"+
-                            "geoId varchar(50) ,\n"+
-                            "countryterritoryCode varchar(50),\n"+
-                            "popData2018 varchar(50),\n"+
-                            "continentExp varchar(50)\n"+
-                            ");";
+       try{
+          String sqlCountries = "CREATE TABLE IF NOT EXISTS countries (\n" +
+                            "geo_id integer PRIMARY KEY,\n"+
+                            "country_territory_code text ,\n"+
+                            "name text ,\n"+
+                            "pop_data_2018 integer ,\n"+
+                            "continent_exp text);";
+          
+          String sqlDeaths = "CREATE TABLE IF NOT EXISTS cases_and_deaths (\n" +
+                            "date date PRIMARY KEY,\n"+
+                            "cases integer ,\n"+
+                            "deaths integer ,\n"+
+                            "geo_id integer);";
 
           Statement stmt = conexion.createStatement();
-          stmt.execute(sql);
+          stmt.execute(sqlCountries);
+          stmt.execute(sqlDeaths);
           System.out.println("Tabla creada.");
       }
       catch(SQLException e){
@@ -79,28 +79,67 @@ public class Conexion {
         
     }
     
-    public static void insertarValores(String tabla, String dateRep, int day, int month,
-                                        int year, int cases, int deaths, String countriesAndTerritories,
-                                        String geoId, String countryterritoryCode, String popData2018, String  continentExp){
+     public static boolean existeCampo(String tabla,  String columna, String campo){
+        boolean contiene = false;
+        ResultSet rs = null;
         try{
-            String sql = "INSERT INTO "+tabla+"(dateRep, day, month, year, cases, deaths, countriesAndTerritories, "
-                                             + "geoId, countryterritoryCode, popData2018, continentExp) "
-                            + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "SELECT * FROM "+ tabla +" WHERE " + columna + " LIKE ?;";
             PreparedStatement pstmt = conexion.prepareStatement(sql);
+            pstmt.setString(1, campo);
+            rs = pstmt.executeQuery();     
+            if(rs.next() == false){
+                contiene = false;
+            }else{
+                contiene = true;
+            }            
+        }
+        catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return contiene;
+    
+    }
+    
+    public static void insertarValores1(String dateRep, int cases, int deaths, String countriesAndTerritories,
+                                        String geoId, String countryterritoryCode, String popData2018, String  continentExp){
+        String tablaCountries = "countries";
+        String columnaCountries = "geo_id";
+        try{
+            
+            if(!existeCampo(tablaCountries, columnaCountries, geoId)){                            
+                String sqlCountries = "INSERT INTO countries (geo_id, country_territory_code, countries_and_territories, pop_data_2018, continent_exp) "
+                                + "VALUES(?, ?, ?, ?, ?)";
+                PreparedStatement pstmt = conexion.prepareStatement(sqlCountries);
+                pstmt.setString(1, geoId);
+                pstmt.setString(2, countriesAndTerritories);
+                pstmt.setString(3, countriesAndTerritories);
+                pstmt.setString(4, popData2018);
+                pstmt.setString(5, continentExp);
+                pstmt.executeUpdate();
+            }
+                        
+        }
+        catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    public static void insertarValores2(String dateRep, int cases, int deaths, String countriesAndTerritories,
+                                        String geoId, String countryterritoryCode, String popData2018, String  continentExp){
+        String tablaCases = "cases_and_deaths";
+        String columnaCases = "date";
+        try{
+                String sqlDeaths = "INSERT INTO cases_and_deaths (date, cases, deaths, geo_id) "
+                                + "VALUES(?, ?, ?, ?)";
+                PreparedStatement pstmt2 = conexion.prepareStatement(sqlDeaths);
 
-            pstmt.setString(1, dateRep);
-            pstmt.setInt(2, day);
-            pstmt.setInt(3, month);
-            pstmt.setInt(4, year);
-            pstmt.setInt(5, cases);
-            pstmt.setInt(6, deaths);
-            pstmt.setString(7, countriesAndTerritories);
-            pstmt.setString(8, geoId);
-            pstmt.setString(9, countryterritoryCode);
-            pstmt.setString(10, popData2018);
-            pstmt.setString(11, continentExp);
-            pstmt.executeUpdate();
-            System.out.println(tabla + " se añadió correctamente.");
+
+                pstmt2.setString(1, dateRep);
+                pstmt2.setInt(2, cases);
+                pstmt2.setInt(3, deaths);
+                pstmt2.setString(4, geoId);
+                pstmt2.executeUpdate();
+           
         }
         catch(SQLException e){
             System.out.println(e.getMessage());
@@ -108,25 +147,44 @@ public class Conexion {
     }
     
     public static void obtenerPaisesPorNumCasos(int numCasos){
-        Session session = HibernateUtil.getSession();
-    
-        Query sql = session.createQuery("SELECT r FROM Records r WHERE r.cases > :n");
-        sql.setParameter("n", numCasos);
-        List<Records> records = sql.list();
-        for(Records r :records){
-            System.out.println("Pais: " +r.getCountriesAndTerritories().toString() + " - Continente: " + r.getContinentExp().toString() + " - Casos: " + r.getCases());
+        ResultSet rs = null;
+        try{
+            String sql1 = "select c.countries_and_territories, (select MAX(cases) from cases_and_deaths where geo_id = c.geo_id) as casos \n" +
+                            "from countries c INNER JOIN cases_and_deaths cd ON cd.geo_id = c.geo_id \n" +
+                            " group by c.geo_id having casos > " + numCasos+ " order by casos asc";
+            
+            Statement stmt = conexion.createStatement();
+            
+            rs = stmt.executeQuery(sql1);
+               
+                 while(rs.next()){
+                     System.out.println("Pais: "+rs.getString("countries_and_territories") + " - Casos: " + rs.getString("casos"));
+                } 
+               
+                
+        }
+        catch(SQLException e){
+            System.out.println(e.getMessage());
         }
     }
     
      public static void obtenerMayorNumMuertesPorPais(){
-        Session session = HibernateUtil.getSession();
-
-        Query sql = session.createQuery("select r.countriesAndTerritories,  max(r.deaths) as deaths, r.day from Records r GROUP BY r.countriesAndTerritories");
-        List<Object> lista = sql.list();
-       
-        for(Object obj : lista){
-            Object[] campo = (Object[])obj;
-            System.out.println("Pais: " + campo[0] + " - Muertes: " + campo[1] + " - Dia: " + campo[2]);
+        ResultSet rs = null;
+        try{
+            String sql1 = "SELECT MAX(deaths) AS muertes, * FROM countries c INNER JOIN cases_and_deaths cd ON cd.geo_id = c.geo_id GROUP BY c.geo_id ORDER BY muertes ASC;";
+            Statement stmt = conexion.createStatement();
+          
+            rs = stmt.executeQuery(sql1);     
+            if(rs.next() == false){
+                System.out.println("No se han encontrado paises");
+            }else{
+                while(rs.next()){
+                    System.out.println("Pais: "+rs.getString("countries_and_territories") + " - Muertes: " + rs.getInt("muertes") + " - Fecha: " + rs.getString("date") + " - Día: " + rs.getString("date").substring(0, 2));
+                }
+            }            
+        }
+        catch(SQLException e){
+            System.out.println(e.getMessage());
         }
     }
     
@@ -134,16 +192,18 @@ public class Conexion {
          XMLReader procesadorXml = null;
         try{
             procesadorXml = XMLReaderFactory.createXMLReader();
-            Recordxml recordXml = new Recordxml();
+            Countriexml recordXml = new Countriexml();
             procesadorXml.setContentHandler(recordXml);
             InputSource archivoXml = new InputSource(nombreXml);
             procesadorXml.parse(archivoXml);
             ArrayList<Records> records = recordXml.getRecords();
+            ArrayList<Countrie> countries = recordXml.getCountries();
             Session session = null;
             Transaction tran = null;
             session = HibernateUtil.leerFicheroConfigurarMysql(archivoJson);
-          session.beginTransaction();
-            for(Records r: records){   
+            session.beginTransaction();
+            for(Countrie r: countries){  
+              
                 session.save(r);
            
             }
@@ -161,7 +221,7 @@ public class Conexion {
         boolean contiene = false;
         ResultSet rs = null;
         try{
-            String sql = "SELECT * FROM record;";
+            String sql = "SELECT * FROM countries;";
             Statement stmt = conexion.createStatement();
           
             rs = stmt.executeQuery(sql);     

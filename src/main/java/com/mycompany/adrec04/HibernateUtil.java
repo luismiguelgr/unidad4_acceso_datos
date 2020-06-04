@@ -53,8 +53,9 @@ public class HibernateUtil {
                 // Configuracion del archivo hibernate.cfg.xml
                 Properties settings = new Properties();
 
-                settings.put(Environment.URL, url+"?serverTimezone="+TimeZone.getDefault().getID());
-                
+                //settings.put(Environment.URL, url+"?serverTimezone="+TimeZone.getDefault().getID());
+                //settings.put(Environment.URL, url+"?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC");
+                settings.put(Environment.URL, url+"?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8&serverTimezone="+TimeZone.getDefault().getID());
                 settings.put(Environment.USER, usuario);
                 
                 settings.put(Environment.PASS, pass);
@@ -72,13 +73,15 @@ public class HibernateUtil {
                 configuration.setProperties(settings);
 
                 configuration.addAnnotatedClass(Records.class);
+                configuration.addAnnotatedClass(Countrie.class);
+                configuration.addAnnotatedClass(CasesAndDeaths.class);
 
                 ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 
                     .applySettings(configuration.getProperties()).build();
 
                 sessionFactory = configuration.buildSessionFactory(serviceRegistry);
-
+                //sessionFactory = new Configuration().configure("hibernate.cfg.xml").buildSessionFactory();
             } catch (Exception e) {
                 e.printStackTrace();
             }
