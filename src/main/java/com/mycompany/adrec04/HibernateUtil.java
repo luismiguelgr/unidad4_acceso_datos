@@ -72,7 +72,6 @@ public class HibernateUtil {
 
                 configuration.setProperties(settings);
 
-                configuration.addAnnotatedClass(Records.class);
                 configuration.addAnnotatedClass(Countrie.class);
                 configuration.addAnnotatedClass(CasesAndDeaths.class);
 

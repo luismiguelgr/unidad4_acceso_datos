@@ -146,8 +146,8 @@ public class Conexion {
         }
     }
     
-    public static void obtenerPaisesPorNumCasos(int numCasos){
-        ResultSet rs = null;
+    public static void obtenerMayorNumMuertesPorPais(){
+       /* ResultSet rs = null;
         try{
             String sql1 = "select c.countries_and_territories, (select MAX(cases) from cases_and_deaths where geo_id = c.geo_id) as casos \n" +
                             "from countries c INNER JOIN cases_and_deaths cd ON cd.geo_id = c.geo_id \n" +
@@ -165,51 +165,87 @@ public class Conexion {
         }
         catch(SQLException e){
             System.out.println(e.getMessage());
-        }
+        }*/
     }
-    
-     public static void obtenerMayorNumMuertesPorPais(){
-        ResultSet rs = null;
-        try{
-            String sql1 = "SELECT MAX(deaths) AS muertes, * FROM countries c INNER JOIN cases_and_deaths cd ON cd.geo_id = c.geo_id GROUP BY c.geo_id ORDER BY muertes ASC;";
-            Statement stmt = conexion.createStatement();
-          
-            rs = stmt.executeQuery(sql1);     
-            if(rs.next() == false){
-                System.out.println("No se han encontrado paises");
-            }else{
-                while(rs.next()){
-                    System.out.println("Pais: "+rs.getString("countries_and_territories") + " - Muertes: " + rs.getInt("muertes") + " - Fecha: " + rs.getString("date") + " - Día: " + rs.getString("date").substring(0, 2));
-                }
-            }            
-        }
-        catch(SQLException e){
-            System.out.println(e.getMessage());
+   
+     public static void obtenerPaisesPorNumCasos(int numCasos){
+        Session session = HibernateUtil.getSession();
+        String sql1 = "select c.countries_and_territories, (select MAX(cases) from cases_and_deaths where geo_id = c.geo_id) as casos " +
+                                    "from countries c INNER JOIN cases_and_deaths cd ON cd.geo_id = c.geo_id " +
+                                        "group by c.geo_id having casos > "+numCasos+ " order by casos asc";
+        Query sql = session.createNativeQuery(sql1);
+        //sql.setParameter("n", numCasos);
+        List<Countrie> records = sql.list();
+        for(Countrie r :records){
+            System.out.println("Pais: " + r);
         }
     }
     
     public static void procesarXml(String nombreXml, String archivoJson){
          XMLReader procesadorXml = null;
+         XMLReader procesadorXml2 = null;
         try{
             procesadorXml = XMLReaderFactory.createXMLReader();
-            Countriexml recordXml = new Countriexml();
-            procesadorXml.setContentHandler(recordXml);
+            Countriexml countrieXml = new Countriexml();
+            //CasesAndDeathsxml casesAndDeathsXml = new CasesAndDeathsxml();
+            procesadorXml.setContentHandler(countrieXml);
+            //procesadorXml.setContentHandler(casesAndDeathsXml);
             InputSource archivoXml = new InputSource(nombreXml);
             procesadorXml.parse(archivoXml);
-            ArrayList<Records> records = recordXml.getRecords();
-            ArrayList<Countrie> countries = recordXml.getCountries();
+            //ArrayList<CasesAndDeaths> casesAndDeaths = casesAndDeathsXml.getCasesAndDeaths();
+            ArrayList<Countrie> countries = countrieXml.getCountries();
             Session session = null;
             Transaction tran = null;
             session = HibernateUtil.leerFicheroConfigurarMysql(archivoJson);
             session.beginTransaction();
-            for(Countrie r: countries){  
-              
-                session.save(r);
-           
+            Countrie cAnt = null;
+            for(Countrie c: countries){                
+                if(cAnt == null){
+                    session.save(c);
+                    cAnt = c;
+                }else{
+                    if(!c.getGeoId().equals(cAnt.getGeoId())){
+                    session.save(c);
+                    cAnt = c;
+                }  
+                }
+                                    
+                
             }
-              session.getTransaction().commit();
+            session.getTransaction().commit();
                 session.close();
+               
+        } catch (SAXException e){
+            System.out.println("Error al leer el XML");
+        } catch (IOException e){
+            System.out.println("Error al leer el archivo XML");
+        }
+    }
+    
+     public static void procesarXml2(String nombreXml, String archivoJson){
+         
+         XMLReader procesadorXml2 = null;
+        try{
             
+                //////
+                Session session = null;
+            Transaction tran = null;
+                procesadorXml2 = XMLReaderFactory.createXMLReader();
+                CasesAndDeathsxml casesAndDeathsXml = new CasesAndDeathsxml();
+              procesadorXml2.setContentHandler(casesAndDeathsXml);
+              InputSource archivoXml2 = new InputSource(nombreXml);
+            procesadorXml2.parse(archivoXml2);
+              ArrayList<CasesAndDeaths> casesAndDeaths = casesAndDeathsXml.getCasesAndDeaths();
+           
+            session = HibernateUtil.leerFicheroConfigurarMysql(archivoJson);
+            session.beginTransaction();
+                  
+            for(CasesAndDeaths cad: casesAndDeaths){                
+                session.save(cad);           
+            }
+              
+            session.getTransaction().commit();
+                session.close();
         } catch (SAXException e){
             System.out.println("Error al leer el XML");
         } catch (IOException e){

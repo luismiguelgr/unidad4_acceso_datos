@@ -24,6 +24,7 @@ public class Main {
         //Long numFilas = (Long) query.uniqueResult();
         //if(numFilas <= 0){
             Conexion.procesarXml(nombreXml, archivoJson);
+            Conexion.procesarXml2(nombreXml, archivoJson);
         //}
         menu();
      

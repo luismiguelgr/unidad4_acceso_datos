@@ -9,6 +9,7 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
@@ -28,7 +29,7 @@ public class Countrie implements Serializable {
     private int id;
     
      @Column(name="geo_id")
-    private String geoId;
+     private String geoId;
     
     @Column(name="country_territory_code")
     private String countryterritoryCode;
@@ -37,7 +38,7 @@ public class Countrie implements Serializable {
     private String countriesAndTerritories;
     
     @Column(name="pop_data_2018")
-    private int popData2018;
+    private String popData2018;
     
     @Column(name="continent_exp")
     private String continentExp;
@@ -45,7 +46,7 @@ public class Countrie implements Serializable {
     public Countrie() {
     }
 
-    public Countrie(int id, String geoId, String countryterritoryCode, String countriesAndTerritories, int popData2018, String continentExp) {
+    public Countrie(int id, String geoId, String countryterritoryCode, String countriesAndTerritories, String popData2018, String continentExp) {
         this.id = id;
         this.geoId = geoId;
         this.countryterritoryCode = countryterritoryCode;
@@ -88,11 +89,11 @@ public class Countrie implements Serializable {
         this.countriesAndTerritories = countriesAndTerritories;
     }
 
-    public int getPopData2018() {
+    public String getPopData2018() {
         return popData2018;
     }
 
-    public void setPopData2018(int popData2018) {
+    public void setPopData2018(String popData2018) {
         this.popData2018 = popData2018;
     }
 
