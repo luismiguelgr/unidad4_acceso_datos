@@ -6,12 +6,23 @@
 package com.mycompany.adrec04;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import org.hibernate.annotations.GenericGenerator;
 
 /**
@@ -19,7 +30,7 @@ import org.hibernate.annotations.GenericGenerator;
  * @author miguel
  */
 @Entity
-@Table(name="countries")
+@Table(name="countrie")
 public class Countrie implements Serializable {
     
     @Id
@@ -28,7 +39,11 @@ public class Countrie implements Serializable {
     @Column(name="id", unique= true)
     private int id;
     
-     @Column(name="geo_id")
+    @OneToMany(mappedBy="id", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<CasesAndDeaths> cases = new ArrayList<>();
+   
+    
+    @Column(name = "geo_id", unique = true)
      private String geoId;
     
     @Column(name="country_territory_code")
@@ -46,6 +61,7 @@ public class Countrie implements Serializable {
     public Countrie() {
     }
 
+    /*
     public Countrie(int id, String geoId, String countryterritoryCode, String countriesAndTerritories, String popData2018, String continentExp) {
         this.id = id;
         this.geoId = geoId;
@@ -53,9 +69,15 @@ public class Countrie implements Serializable {
         this.countriesAndTerritories = countriesAndTerritories;
         this.popData2018 = popData2018;
         this.continentExp = continentExp;
-    }
+    }*/
 
-    
+    public List<CasesAndDeaths> getCasesAndDeaths() {
+    return cases;
+}
+
+public void setCasesAndDeaths(List<CasesAndDeaths> cases) {
+    this.cases = cases;
+}
     
     public int getId() {
         return id;

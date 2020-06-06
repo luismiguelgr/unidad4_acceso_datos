@@ -8,8 +8,11 @@ package com.mycompany.adrec04;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -38,17 +41,22 @@ public class CasesAndDeaths implements Serializable{
     
     @Column(name="geo_id")
     private String geoId;
-
+    /*
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "countrie_id")
+    private Countrie countrie;
+*/
     public CasesAndDeaths() {
     }
 
+    /*
     public CasesAndDeaths(int id, String date, int cases, int deaths, String geoId) {
         this.id = id;
         this.date = date;
         this.cases = cases;
         this.deaths = deaths;
         this.geoId = geoId;
-    }
+    }*/
 
     public int getId() {
         return id;

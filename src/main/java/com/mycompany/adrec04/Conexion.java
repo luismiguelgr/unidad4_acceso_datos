@@ -170,14 +170,19 @@ public class Conexion {
    
      public static void obtenerPaisesPorNumCasos(int numCasos){
         Session session = HibernateUtil.getSession();
-        String sql1 = "select c.countries_and_territories, (select MAX(cases) from cases_and_deaths where geo_id = c.geo_id) as casos " +
-                                    "from countries c INNER JOIN cases_and_deaths cd ON cd.geo_id = c.geo_id " +
-                                        "group by c.geo_id having casos > "+numCasos+ " order by casos asc";
-        Query sql = session.createNativeQuery(sql1);
+        /*String sql1 = "SELECT c.countriesAndTerritories, (SELECT MAX(cases) FROM CasesAndDeaths WHERE geoId = c.geoId) " +
+                                    "FROM Countrie c INNER JOIN CasesAndDeaths cd ON cd.geoId = c.geoId " +
+                                        " where cd.cases > :n ";*/
+        //String sql1 = "select c from Countrie c, CasesAndDeaths cd WHERE  cd.geoId = c.geoId having cd.cases > :n ";
+        String sql1 = "select c.countries_and_territories, (select MAX(cases) from cases_and_deaths where geo_id = c.geo_id) as casos \n" +
+                            "from countries c INNER JOIN cases_and_deaths cd ON cd.geo_id = c.geo_id \n" +
+                            " group by c.geo_id having casos > " + numCasos;
+        Query sql = session.createQuery(sql1);
         //sql.setParameter("n", numCasos);
-        List<Countrie> records = sql.list();
-        for(Countrie r :records){
-            System.out.println("Pais: " + r);
+        List<Countrie> countries = sql.list();
+        for(Countrie c :countries){
+            
+            System.out.println("Pais: " + c.getGeoId() + " Casos:" + c.getCasesAndDeaths().get(0).getDate());
         }
     }
     
@@ -186,31 +191,39 @@ public class Conexion {
          XMLReader procesadorXml2 = null;
         try{
             procesadorXml = XMLReaderFactory.createXMLReader();
+            procesadorXml2 = XMLReaderFactory.createXMLReader();
             Countriexml countrieXml = new Countriexml();
-            //CasesAndDeathsxml casesAndDeathsXml = new CasesAndDeathsxml();
+            CasesAndDeathsxml casesAndDeathsXml = new CasesAndDeathsxml();
             procesadorXml.setContentHandler(countrieXml);
-            //procesadorXml.setContentHandler(casesAndDeathsXml);
+            procesadorXml2.setContentHandler(casesAndDeathsXml);
             InputSource archivoXml = new InputSource(nombreXml);
             procesadorXml.parse(archivoXml);
-            //ArrayList<CasesAndDeaths> casesAndDeaths = casesAndDeathsXml.getCasesAndDeaths();
+            procesadorXml2.parse(archivoXml);
+            ArrayList<CasesAndDeaths> casesAndDeaths = casesAndDeathsXml.getCasesAndDeaths();
             ArrayList<Countrie> countries = countrieXml.getCountries();
             Session session = null;
             Transaction tran = null;
             session = HibernateUtil.leerFicheroConfigurarMysql(archivoJson);
             session.beginTransaction();
             Countrie cAnt = null;
-            for(Countrie c: countries){                
-                if(cAnt == null){
+                    List<CasesAndDeaths> listaCases = new ArrayList<CasesAndDeaths>();
+            for(Countrie c: countries){ 
+               for(CasesAndDeaths cd: casesAndDeaths){
+                   if(cd.getGeoId().equals(c.getGeoId())){
+                       listaCases.add(cd);
+                   }
+               }
+                       c.setCasesAndDeaths(listaCases);
+                       if(cAnt == null){
                     session.save(c);
                     cAnt = c;
                 }else{
                     if(!c.getGeoId().equals(cAnt.getGeoId())){
-                    session.save(c);
-                    cAnt = c;
-                }  
-                }
-                                    
-                
+                        session.save(c);
+                        cAnt = c;
+                    }  
+                } 
+                    
             }
             session.getTransaction().commit();
                 session.close();
@@ -239,8 +252,9 @@ public class Conexion {
            
             session = HibernateUtil.leerFicheroConfigurarMysql(archivoJson);
             session.beginTransaction();
-                  
-            for(CasesAndDeaths cad: casesAndDeaths){                
+                  Countrie c = new Countrie();
+            for(CasesAndDeaths cad: casesAndDeaths){ 
+                
                 session.save(cad);           
             }
               
